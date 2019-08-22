@@ -97,13 +97,34 @@ class ChordBox {
     return text.move(x - text.length() / 2, y);
   }
 
+  drawTitle(msg, attrs) {
+    const textAttrs = {
+      ...{
+        family: this.params.fontFamily,
+        size: this.metrics.fontSize,
+        style: this.params.fontStyle,
+        weight: this.params.fontWeight,
+      },
+      ...attrs,
+    };
+
+    const text = this.canvas
+      .text(`${msg}`)
+      .stroke(this.params.textColor)
+      .fill(this.params.textColor)
+      .font(textAttrs);
+
+    return text.move(this.x, 0);
+  }
+
   drawLine(x, y, newX, newY) {
     return this.canvas.line(0, 0, newX - x, newY - y).move(x, y);
   }
 
   draw({
-    chord, position, barres, positionText, tuning,
+    chord, position, barres, positionText, tuning, name
   }) {
+    this.name = name || '';
     this.chord = chord;
     this.position = position || 0;
     this.positionText = positionText || 0;
@@ -115,6 +136,11 @@ class ChordBox {
 
     const { spacing } = this;
     const { fretSpacing } = this;
+
+    // Draw title
+    this.drawTitle(this.name, {
+      size: this.metrics.fontSize * 1.8,
+    })
 
     // Draw guitar bridge
     if (this.position <= 1) {
