@@ -98,12 +98,16 @@ class ChordBox {
   }
 
   drawTitle(msg, attrs) {
+    const spacing = this.spacing;
+    const fromX = this.x;
+
     const textAttrs = {
       ...{
         family: this.params.fontFamily,
         size: this.metrics.fontSize,
         style: this.params.fontStyle,
         weight: this.params.fontWeight,
+        anchor: 'middle'
       },
       ...attrs,
     };
@@ -112,9 +116,11 @@ class ChordBox {
       .text(`${msg}`)
       .stroke(this.params.textColor)
       .fill(this.params.textColor)
-      .font(textAttrs);
+      .font(textAttrs)
 
-    return text.move(this.x, 0);
+    text.center(fromX + 0.5 * (this.x + spacing * (this.numStrings - 1) - fromX), text.bbox().h / 2)
+
+    return text;
   }
 
   drawLine(x, y, newX, newY) {
@@ -153,7 +159,9 @@ class ChordBox {
         .fill(this.params.bridgeColor);
     } else {
       // Draw position number
-      this.drawText(this.x - this.spacing / 2 - this.spacing * 0.1, this.y + this.fretSpacing * this.positionText, this.position);
+      this.drawText(this.params.width - this.spacing / 2 - this.spacing * 0.1, this.y + this.fretSpacing * this.positionText, this.position, {
+        size: this.metrics.fontSize * 1.25,
+      });
     }
 
     // Draw strings
