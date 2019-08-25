@@ -15,7 +15,7 @@ class ChordBox {
       ...{
         numStrings: 6,
         numFrets: 5,
-        x: 0,
+        x: -50,
         y: 0,
         width: 100,
         height: 120,
@@ -27,7 +27,7 @@ class ChordBox {
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
         fontSize: undefined,
         fontStyle: 'light',
-        fontWeight: '100',
+        fontWeight: '600',
         labelWeight: '100',
       },
       ...params,
@@ -159,7 +159,7 @@ class ChordBox {
         .fill(this.params.bridgeColor);
     } else {
       // Draw position number
-      this.drawText(this.params.width - this.spacing / 2 - this.spacing * 0.1, this.y + this.fretSpacing * this.positionText, this.position, {
+      this.drawText(this.params.width - this.spacing, this.y + this.fretSpacing * this.positionText, this.position + 'fr', {
         size: this.metrics.fontSize * 1.25,
       });
     }
@@ -212,20 +212,27 @@ class ChordBox {
 
     const x = this.x + this.spacing * stringNum;
     let y = this.y + this.fretSpacing * fretNum;
-
-    if (fretNum === 0) {
+    console.log(this.position)
+    if (fretNum === 0 && shiftPosition === 1) {
       y -= this.metrics.bridgeStrokeWidth;
     }
+
+    const circleRadius = this.params.circleRadius || this.metrics.circleRadius;
+
+    const yPos = fretNum <= 0 ? y - 1.5 * circleRadius - this.metrics.bridgeStrokeWidth : y - this.fretSpacing / 2;
 
     if (!mute) {
       this.canvas
         .circle()
-        .move(x, y - this.fretSpacing / 2)
-        .radius(this.params.circleRadius || this.metrics.circleRadius)
+        .move(x, yPos)
+        .radius(circleRadius)
         .stroke({ color: this.params.strokeColor, width: this.params.strokeWidth })
-        .fill(fretNum > 0 ? this.params.strokeColor : this.params.bgColor);
+        .fill(fretNum > 0 ? this.params.strokeColor : 'none');
     } else {
-      this.drawText(x, y - this.fretSpacing, 'X');
+      this.drawText(x, y - circleRadius * 3.4, 'X', {
+        size: circleRadius * 2.5,
+        fontWeight: 700
+      });
     }
 
     if (label) {
