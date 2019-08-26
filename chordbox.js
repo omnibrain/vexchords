@@ -27,7 +27,7 @@ class ChordBox {
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
         fontSize: undefined,
         fontStyle: 'light',
-        fontWeight: '600',
+        fontWeight: '100',
         labelWeight: '100',
       },
       ...params,
@@ -229,9 +229,8 @@ class ChordBox {
         .stroke({ color: this.params.strokeColor, width: this.params.strokeWidth })
         .fill(fretNum > 0 ? this.params.strokeColor : 'none');
     } else {
-      this.drawText(x, y - circleRadius * 3.4, 'X', {
-        size: circleRadius * 2.5,
-        fontWeight: 700
+      this.drawText(x, y - circleRadius * 3.5, 'X', {
+        size: circleRadius * 2.5
       });
     }
 
