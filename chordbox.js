@@ -212,7 +212,6 @@ class ChordBox {
 
     const x = this.x + this.spacing * stringNum;
     let y = this.y + this.fretSpacing * fretNum;
-    console.log(this.position)
     if (fretNum === 0 && shiftPosition === 1) {
       y -= this.metrics.bridgeStrokeWidth;
     }
