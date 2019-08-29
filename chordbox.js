@@ -222,10 +222,6 @@ class ChordBox {
       this.spacing / 2 - this.params.strokeWidth, // width
     );
 
-    console.log('circleRadius', this.params.circleRadius || this.metrics.circleRadius)
-    console.log('this.fretSpacing / 2', this.fretSpacing / 2)
-    console.log('this.spacing', this.spacing)
-
     const yPos = fretNum <= 0 ? y - 1.5 * circleRadius - this.metrics.bridgeStrokeWidth : y - this.fretSpacing / 2;
 
     if (!mute) {
