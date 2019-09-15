@@ -3,14 +3,14 @@
  * Mohit Muthanna Cheppudira -- http://0xfe.blogspot.com
  */
 
-import { SVG } from '@svgdotjs/svg.js';
+import { SVG } from '@svgdotjs/svg.js'
 
 // ChordBox implements the rendering logic for the chord
 // diagrams.
 class ChordBox {
   // sel can be a selector or an element.
   constructor(sel, params) {
-    this.sel = sel;
+    this.sel = sel
     this.params = {
       ...{
         numStrings: 6,
@@ -35,31 +35,31 @@ class ChordBox {
 
     // Setup defaults if not specifically overridden
     ['bridgeColor', 'stringColor', 'fretColor', 'strokeColor', 'textColor'].forEach((param) => {
-      this.params[param] = this.params[param] || this.params.defaultColor;
+      this.params[param] = this.params[param] || this.params.defaultColor
     });
 
     ['stringWidth', 'fretWidth'].forEach((param) => {
-      this.params[param] = this.params[param] || this.params.strokeWidth;
-    });
+      this.params[param] = this.params[param] || this.params.strokeWidth
+    })
 
     // Create canvas and add it to the DOM
     this.canvas = SVG()
       .addTo(sel)
-      .size(this.params.width, this.params.height);
+      .size(this.params.width, this.params.height)
 
     // Size and shift board
-    this.width = this.params.width * 0.75;
-    this.height = this.params.height * 0.75;
+    this.width = this.params.width * 0.75
+    this.height = this.params.height * 0.75
 
     // Initialize scaled-spacing
-    this.numStrings = this.params.numStrings;
-    this.numFrets = this.params.numFrets;
-    this.spacing = this.width / this.numStrings;
-    this.fretSpacing = this.height / (this.numFrets + 2);
+    this.numStrings = this.params.numStrings
+    this.numFrets = this.params.numFrets
+    this.spacing = this.width / this.numStrings
+    this.fretSpacing = this.height / (this.numFrets + 2)
 
     // Add room on sides for finger positions on 1. and 6. string
-    this.x = this.params.x + this.params.width * 0.15 + this.spacing / 2;
-    this.y = this.params.y + this.params.height * 0.15 + this.fretSpacing;
+    this.x = this.params.x + this.params.width * 0.15 + this.spacing / 2
+    this.y = this.params.y + this.params.height * 0.15 + this.fretSpacing
 
     this.metrics = {
       circleRadius: this.width / 20,
@@ -67,14 +67,14 @@ class ChordBox {
       fontSize: this.params.fontSize || Math.ceil(this.width / 8),
       barShiftX: this.width / 28,
       bridgeStrokeWidth: Math.ceil(this.height / 36),
-    };
+    }
 
     // Content
-    this.position = 0;
-    this.positionText = 0;
-    this.chord = [];
-    this.barres = [];
-    this.tuning = ['E', 'A', 'D', 'G', 'B', 'E'];
+    this.position = 0
+    this.positionText = 0
+    this.chord = []
+    this.barres = []
+    this.tuning = ['E', 'A', 'D', 'G', 'B', 'E']
   }
 
   drawText(x, y, msg, attrs) {
@@ -86,31 +86,7 @@ class ChordBox {
         weight: this.params.fontWeight,
       },
       ...attrs,
-    };
-
-    const text = this.canvas
-      .text(`${msg}`)
-      .stroke(this.params.textColor)
-      .fill(this.params.textColor)
-      .font(textAttrs);
-
-    return text.move(x - text.length() / 2, y);
-  }
-
-  drawTitle(msg, attrs) {
-    const spacing = this.spacing;
-    const fromX = this.x;
-
-    const textAttrs = {
-      ...{
-        family: this.params.fontFamily,
-        size: this.metrics.fontSize,
-        style: this.params.fontStyle,
-        weight: this.params.fontWeight,
-        anchor: 'middle'
-      },
-      ...attrs,
-    };
+    }
 
     const text = this.canvas
       .text(`${msg}`)
@@ -118,30 +94,77 @@ class ChordBox {
       .fill(this.params.textColor)
       .font(textAttrs)
 
-    text.center(fromX + 0.5 * (this.x + spacing * (this.numStrings - 1) - fromX), text.bbox().h / 2)
+    return text.move(x - text.length() / 2, y)
+  }
 
-    return text;
+  drawX(x, y, size) {
+    const relativeWidth = 3/4;
+    const d = (size / 2) * relativeWidth;
+    const actualY = y - relativeWidth * 2
+
+    this.canvas
+      .line(x - d, actualY - d, x + d, actualY + d)
+      .stroke({ color: '#000', width: 3, linecap: 'round' })
+    this.canvas
+      .line(x - d, actualY + d, x + d, actualY - d)
+      .stroke({ color: '#000', width: 3, linecap: 'round' })
+  }
+
+  drawTitle(msg, attrs) {
+    const spacing = this.spacing
+    const fromX = this.x
+    const size = attrs.size || this.metrics.fontSize
+
+    const textAttrs = {
+      ...{
+        size,
+        family: this.params.fontFamily,
+        style: this.params.fontStyle,
+        weight: this.params.fontWeight,
+        anchor: 'middle',
+        'alignment-baseline': 'baseline'
+      },
+      ...attrs,
+    }
+
+    const text = this.canvas
+      .text(`${msg}`)
+      .stroke(this.params.textColor)
+      .fill(this.params.textColor)
+      .font(textAttrs)
+
+    text.center(fromX + 0.5 * (this.x + spacing * (this.numStrings - 1) - fromX), this.y - this.fretSpacing - 10)
+
+    const bbox = text.bbox()
+    if (bbox.x < 0|| bbox.x + bbox.width > this.params.width) {
+      text.remove()
+
+      // try again with smaller font
+      this.drawTitle(msg, {...attrs, size: size * 0.9})
+    }
+
+    return text
   }
 
   drawLine(x, y, newX, newY) {
-    return this.canvas.line(0, 0, newX - x, newY - y).move(x, y);
+    return this.canvas.line(0, 0, newX - x, newY - y).move(x, y)
   }
 
   draw({
-    chord, position, barres, positionText, tuning, name
-  }) {
-    this.name = name || '';
-    this.chord = chord;
-    this.position = position || 0;
-    this.positionText = positionText || 0;
-    this.barres = barres || [];
-    this.tuning = tuning || ['E', 'A', 'D', 'G', 'B', 'E'];
+         chord, position, barres, positionText, tuning, name
+       }) {
+    this.name = name || ''
+    this.chord = chord
+    this.position = position || 0
+    this.positionText = positionText || 0
+    this.barres = barres || []
+    this.tuning = tuning || ['E', 'A', 'D', 'G', 'B', 'E']
     if (this.tuning.length === 0) {
-      this.fretSpacing = this.height / (this.numFrets + 1);
+      this.fretSpacing = this.height / (this.numFrets + 1)
     }
 
-    const { spacing } = this;
-    const { fretSpacing } = this;
+    const { spacing } = this
+    const { fretSpacing } = this
 
     // Draw title
     this.drawTitle(this.name, {
@@ -150,18 +173,18 @@ class ChordBox {
 
     // Draw guitar bridge
     if (this.position <= 1) {
-      const fromX = this.x;
-      const fromY = this.y - this.metrics.bridgeStrokeWidth;
+      const fromX = this.x
+      const fromY = this.y - this.metrics.bridgeStrokeWidth
       this.canvas
         .rect(this.x + spacing * (this.numStrings - 1) - fromX, this.y - fromY)
         .move(fromX, fromY)
         .stroke({ width: 0 })
-        .fill(this.params.bridgeColor);
+        .fill(this.params.bridgeColor)
     } else {
       // Draw position number
       this.drawText(this.params.width - this.spacing, this.y + this.fretSpacing * this.positionText, this.position + 'fr', {
         size: this.metrics.fontSize * 1.25,
-      });
+      })
     }
 
     // Draw strings
@@ -169,7 +192,7 @@ class ChordBox {
       this.drawLine(this.x + spacing * i, this.y, this.x + spacing * i, this.y + fretSpacing * this.numFrets).stroke({
         width: this.params.stringWidth,
         color: this.params.stringColor,
-      });
+      })
     }
 
     // Draw frets
@@ -177,13 +200,13 @@ class ChordBox {
       this.drawLine(this.x, this.y + fretSpacing * i, this.x + spacing * (this.numStrings - 1), this.y + fretSpacing * i).stroke({
         width: this.params.fretWidth,
         color: this.params.fretColor,
-      });
+      })
     }
 
     // Draw tuning keys
     if (this.params.showTuning && this.tuning.length !== 0) {
       for (let i = 0; i < Math.min(this.numStrings, this.tuning.length); i += 1) {
-        this.drawText(this.x + this.spacing * i, this.y + this.numFrets * this.fretSpacing + this.fretSpacing / 12, this.tuning[i]);
+        this.drawText(this.x + this.spacing * i, this.y + this.numFrets * this.fretSpacing + this.fretSpacing / 12, this.tuning[i])
       }
     }
 
@@ -194,52 +217,61 @@ class ChordBox {
         string: this.chord[i][0],
         fret: this.chord[i][1],
         label: this.chord.length > 2 ? this.chord[i][2] : undefined,
-      });
+      })
     }
 
     // Draw barres
     for (let i = 0; i < this.barres.length; i += 1) {
-      this.lightBar(this.barres[i].fromString, this.barres[i].toString, this.barres[i].fret);
+      this.lightBar(this.barres[i].fromString, this.barres[i].toString, this.barres[i].fret)
     }
   }
 
   lightUp({ string, fret, label }) {
-    const stringNum = this.numStrings - string;
-    const shiftPosition = this.position === 1 && this.positionText === 1 ? this.positionText : 0;
+    const stringNum = this.numStrings - string
+    const shiftPosition = this.position === 1 && this.positionText === 1 ? this.positionText : 0
 
-    const mute = fret === 'x';
-    const fretNum = fret === 'x' ? 0 : fret - shiftPosition;
+    const mute = fret === 'x'
+    const fretNum = fret === 'x' ? 0 : fret - shiftPosition
 
-    const x = this.x + this.spacing * stringNum;
-    let y = this.y + this.fretSpacing * fretNum;
+    const x = this.x + this.spacing * stringNum
+    let y = this.y + this.fretSpacing * fretNum
     if (fretNum === 0 && shiftPosition === 1) {
-      y -= this.metrics.bridgeStrokeWidth;
+      y -= this.metrics.bridgeStrokeWidth
     }
 
     const circleRadius = Math.min(
       this.params.circleRadius || this.metrics.circleRadius, // user settings
       this.fretSpacing / 2, // height
       this.spacing / 2 - this.params.strokeWidth, // width
-    );
+    )
 
-    const yPos = fretNum <= 0 ? y - 1.5 * circleRadius - this.metrics.bridgeStrokeWidth : y - this.fretSpacing / 2;
+    const yPos = fretNum <= 0 ? y - 1.5 * circleRadius - this.metrics.bridgeStrokeWidth : y - this.fretSpacing / 2
 
     if (!mute) {
-      this.canvas
-        .circle()
-        .move(x, yPos)
-        .radius(circleRadius)
-        .stroke({ color: this.params.strokeColor, width: this.params.strokeWidth })
-        .fill(fretNum > 0 ? this.params.strokeColor : 'none');
+      if (fretNum > 0) {
+        this.canvas
+          .circle()
+          .move(x, yPos)
+          .radius(circleRadius)
+          .stroke({ color: this.params.strokeColor, width: this.params.strokeWidth })
+          .fill(this.params.strokeColor)
+      } else {
+        // open string
+        this.canvas
+          .circle()
+          .move(x, yPos)
+          .radius(circleRadius * 0.9)
+          .stroke({ color: this.params.strokeColor, width: this.params.strokeWidth })
+          .fill('none')
+      }
+
     } else {
-      this.drawText(x, y - circleRadius * 3.5, 'X', {
-        size: circleRadius * 2.5
-      });
+      this.drawX(x, y - circleRadius * 2, circleRadius * 2)
     }
 
     if (label) {
-      const fontSize = this.metrics.fontSize * 0.55;
-      const textYShift = fontSize * 0.66;
+      const fontSize = this.metrics.fontSize * 0.55
+      const textYShift = fontSize * 0.66
       this.drawText(x, y - this.fretSpacing / 2 - textYShift, label, {
         weight: this.params.labelWeight,
         size: fontSize,
@@ -248,35 +280,35 @@ class ChordBox {
           width: 0.7,
           color: fretNum !== 0 ? this.params.labelColor : this.params.strokeColor,
         })
-        .fill(fretNum !== 0 ? this.params.labelColor : this.params.strokeColor);
+        .fill(fretNum !== 0 ? this.params.labelColor : this.params.strokeColor)
     }
 
-    return this;
+    return this
   }
 
   lightBar(stringFrom, stringTo, theFretNum) {
-    let fretNum = theFretNum;
+    let fretNum = theFretNum
     if (this.position === 1 && this.positionText === 1) {
-      fretNum -= this.positionText;
+      fretNum -= this.positionText
     }
 
-    const stringFromNum = this.numStrings - stringFrom;
-    const stringToNum = this.numStrings - stringTo;
+    const stringFromNum = this.numStrings - stringFrom
+    const stringToNum = this.numStrings - stringTo
 
-    const x = this.x + this.spacing * stringFromNum - this.metrics.barShiftX;
-    const xTo = this.x + this.spacing * stringToNum + this.metrics.barShiftX;
+    const x = this.x + this.spacing * stringFromNum - this.metrics.barShiftX
+    const xTo = this.x + this.spacing * stringToNum + this.metrics.barShiftX
 
-    const y = this.y + this.fretSpacing * (fretNum - 1) + this.fretSpacing / 4;
-    const yTo = this.y + this.fretSpacing * (fretNum - 1) + (this.fretSpacing / 4) * 3;
+    const y = this.y + this.fretSpacing * (fretNum - 1) + this.fretSpacing / 4
+    const yTo = this.y + this.fretSpacing * (fretNum - 1) + (this.fretSpacing / 4) * 3
 
     this.canvas
       .rect(xTo - x, yTo - y)
       .move(x, y)
       .radius(this.metrics.barreRadius)
-      .fill(this.params.strokeColor);
+      .fill(this.params.strokeColor)
 
-    return this;
+    return this
   }
 }
 
-export default ChordBox;
+export default ChordBox
