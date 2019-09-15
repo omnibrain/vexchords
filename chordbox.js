@@ -104,10 +104,10 @@ class ChordBox {
 
     this.canvas
       .line(x - d, actualY - d, x + d, actualY + d)
-      .stroke({ color: '#000', width: 3, linecap: 'round' })
+      .stroke({ color: '#000', width: 2, linecap: 'round' })
     this.canvas
       .line(x - d, actualY + d, x + d, actualY - d)
-      .stroke({ color: '#000', width: 3, linecap: 'round' })
+      .stroke({ color: '#000', width: 2, linecap: 'round' })
   }
 
   drawTitle(msg, attrs) {
@@ -261,7 +261,7 @@ class ChordBox {
           .circle()
           .move(x, yPos)
           .radius(circleRadius * 0.9)
-          .stroke({ color: this.params.strokeColor, width: this.params.strokeWidth })
+          .stroke({ color: this.params.strokeColor, width: 2 })
           .fill('none')
       }
 
